@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+// The Hacker service definition
+service Hacker {
+    // Returns "Pong"
+    rpc Ping (PingRequest) returns (PingReply) {}
+}
+
+// The ping request contains no.
+message PingRequest {}
+
+// The ping response should just contain "pong" in `p`
+message PingReply {
+    string p = 1;
+    string err = 2;
+}
