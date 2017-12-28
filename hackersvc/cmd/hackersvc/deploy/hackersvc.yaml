@@ -1,0 +1,79 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hackersvc
+  labels:
+    name: hackersvc
+    app: hacker
+  namespace: ctfsys
+spec:
+  ports:
+  - port: 80
+    targetPort: 8081
+  selector:
+    app: hacker
+    tier: service
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: hackersvc
+  labels:
+    app: hacker
+    tier: service
+  namespace: ctfsys
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hacker
+      tier: service
+  template:
+    metadata:
+      labels:
+        app: hacker
+        tier: service
+    spec:
+      containers:
+      - name: hackersvc
+        image: ctfsys/hackersvc:0.1.0-alpha.4
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+             cpu: 300m
+             memory: 500Mi
+          requests:
+             cpu: 300m
+             memory: 500Mi
+        ports:
+          - name: debug
+            containerPort: 8080
+          - name: http
+            containerPort: 8081
+          - name: grpc
+            containerPort: 8082
+          - name: thrift
+            containerPort: 8083
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop:
+              - all
+          readOnlyRootFilesystem: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: debug
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: debug
+          initialDelaySeconds: 1
+          periodSeconds: 3
+      nodeSelector:
+        beta.kubernetes.io/os: linux

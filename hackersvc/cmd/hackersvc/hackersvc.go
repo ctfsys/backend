@@ -153,7 +153,16 @@ func main() {
 	{
 		// The debug listener mounts the http.DefaultServeMux, and serves up
 		// stuff like the Prometheus metrics route, the Go debug and profiling
-		// routes, and so on.
+		// routes, and so on. It also exposes a /health endpoint so
+		// orchestrators like Kubernetes can know when the service is ready,
+		// and whether it's healthy or not. Healthy here just means that the
+		// service answers.
+
+		http.DefaultServeMux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Ok"))
+		}))
+
 		debugListener, err := net.Listen("tcp", *debugAddr)
 		if err != nil {
 			logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
